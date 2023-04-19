@@ -64,7 +64,7 @@ def evaluate_model(model, X_test, Y_test, category_names):
     print(classification_report(y_test_df,y_pred_df,target_names=category_names))
     
     labels = np.unique(y_pred)
-    accuracy = (y_pred == y_test).mean()
+    accuracy = (y_pred == Y_test).mean()
 
     print("Labels:", labels)
     print("Accuracy:", accuracy)
