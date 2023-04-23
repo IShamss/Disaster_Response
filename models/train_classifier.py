@@ -21,6 +21,18 @@ nltk.download('stopwords')
 
 
 def load_data(database_filepath):
+    '''
+    This function loads the data from the SQL database and prepares it for machine learning modeling.
+
+    Args:
+
+    database_filepath (str): file path of the database containing the cleaned data
+    Returns:
+
+    X (numpy array): an array containing the messages
+    Y (numpy array): an array containing the labels
+    category_names (numpy array): an array containing the names of the categories in Y
+    '''
     engine = create_engine('sqlite:///{}'.format(database_filepath))
     df = pd.read_sql_table('Messages',engine)
     X = df['message'].values
@@ -31,6 +43,16 @@ def load_data(database_filepath):
 
 
 def tokenize(text):
+    '''
+    Tokenize the input text by removing non-alphanumeric characters, converting to lowercase, and lemmatizing each word.
+
+    Args:
+        text (str): The text to be tokenized.
+
+    Returns:
+        list: A list of cleaned and lemmatized tokens extracted from the input text.
+
+    '''
     text = re.sub(r"[^a-zA-Z0-9]", " ", text.lower())
     tokens = word_tokenize(text)
     # Lemmatize the stemming
@@ -44,6 +66,12 @@ def tokenize(text):
 
 
 def build_model():
+    '''
+    Returns a pipeline that processes text data and trains a multi-output classification model using Random Forest Classifier.
+    
+    Returns:
+    pipeline (Pipeline): A pipeline that processes text data and trains a multi-output classification model.
+    '''
     pipeline = Pipeline([
         ('text_pipeline',Pipeline([
             ('vect',CountVectorizer(tokenizer=tokenize)),
@@ -56,6 +84,20 @@ def build_model():
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
+    '''
+    This function evaluates the performance of a given model on a test set of input features X_test and true labels Y_test. It prints a classification report and accuracy score for each category in category_names.
+
+    Arguments:
+
+    model: the trained machine learning model to be evaluated
+    X_test: the test set of input features (array-like or sparse matrix)
+    Y_test: the true labels for the test set (array-like)
+    category_names: a list of category names to be used in the classification report
+    Returns:
+
+    None
+
+    '''
     y_pred = model.predict(X_test)
     
     y_test_df = pd.DataFrame(Y_test,columns=category_names)
@@ -71,6 +113,17 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
 
 def save_model(model, model_filepath):
+    '''
+    The save_model function saves the trained model as a pickle file to a specified file path.
+
+    Parameters:
+
+    model: the trained model to be saved
+    model_filepath: the file path to save the model to
+    Returns:
+
+    None
+    '''
     with open(model_filepath,"wb") as f:
         pickle.dump(model,f)
 
