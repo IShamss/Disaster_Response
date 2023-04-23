@@ -11,7 +11,7 @@ from nltk.stem.porter import PorterStemmer
 from nltk.stem.wordnet import WordNetLemmatizer
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.model_selection import train_test_split , GridSearchCV
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report
@@ -34,12 +34,11 @@ def load_data(database_filepath):
     category_names (numpy array): an array containing the names of the categories in Y
     '''
     engine = create_engine('sqlite:///{}'.format(database_filepath))
-    df = pd.read_sql_table('Messages',engine)
+    df = pd.read_sql_table('Messages', engine)
     X = df['message'].values
-    Y = df.iloc[:,5:].values
-    category_names = df.iloc[:,5:].columns 
-    return (X,Y, category_names)
-    
+    Y = df.iloc[:, 5:].values
+    category_names = df.iloc[:, 5:].columns
+    return (X, Y, category_names)
 
 
 def tokenize(text):
@@ -68,29 +67,27 @@ def tokenize(text):
 def build_model():
     '''
     Returns a pipeline that processes text data and trains a multi-output classification model using Random Forest Classifier.
-    
+
     Returns:
     GridSearchCV object 
     '''
     pipeline = Pipeline([
-        ('text_pipeline',Pipeline([
-            ('vect',CountVectorizer(tokenizer=tokenize)),
-            ('tfidf',TfidfTransformer())
+        ('text_pipeline', Pipeline([
+            ('vect', CountVectorizer(tokenizer=tokenize)),
+            ('tfidf', TfidfTransformer())
         ])),
-        ('clf',MultiOutputClassifier(RandomForestClassifier()))
+        ('clf', MultiOutputClassifier(RandomForestClassifier()))
     ])
-    
+
     parameters = {
-        'features__text_pipeline__vect__ngram_range': ((1, 1), (1, 2)),
-        'clf__n_estimators': [50, 100, 200],
-        'clf__min_samples_split': [2, 3, 4]
+        'text_pipeline__vect__ngram_range': ((1, 1), (1, 2)),
+        'text_pipeline__tfidf__smooth_idf': (True, False)
     }
 
     # create grid search object
-    cv = GridSearchCV(pipeline,param_grid=parameters)
-    
+    cv = GridSearchCV(pipeline, param_grid=parameters)
+
     return cv
-    
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
@@ -109,12 +106,12 @@ def evaluate_model(model, X_test, Y_test, category_names):
 
     '''
     y_pred = model.predict(X_test)
-    
-    y_test_df = pd.DataFrame(Y_test,columns=category_names)
+
+    y_test_df = pd.DataFrame(Y_test, columns=category_names)
     y_pred_df = pd.DataFrame(y_pred, columns=category_names)
 
-    print(classification_report(y_test_df,y_pred_df,target_names=category_names))
-    
+    print(classification_report(y_test_df, y_pred_df, target_names=category_names))
+
     labels = np.unique(y_pred)
     accuracy = (y_pred == Y_test).mean()
 
@@ -134,8 +131,8 @@ def save_model(model, model_filepath):
 
     None
     '''
-    with open(model_filepath,"wb") as f:
-        pickle.dump(model,f)
+    with open(model_filepath, "wb") as f:
+        pickle.dump(model, f)
 
 
 def main():
@@ -143,14 +140,15 @@ def main():
         database_filepath, model_filepath = sys.argv[1:]
         print('Loading data...\n    DATABASE: {}'.format(database_filepath))
         X, Y, category_names = load_data(database_filepath)
-        X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2)
-        
+        X_train, X_test, Y_train, Y_test = train_test_split(
+            X, Y, test_size=0.2)
+
         print('Building model...')
         model = build_model()
-        
+
         print('Training model...')
         model.fit(X_train, Y_train)
-        
+
         print('Evaluating model...')
         evaluate_model(model, X_test, Y_test, category_names)
 
@@ -160,9 +158,9 @@ def main():
         print('Trained model saved!')
 
     else:
-        print('Please provide the filepath of the disaster messages database '\
-              'as the first argument and the filepath of the pickle file to '\
-              'save the model to as the second argument. \n\nExample: python '\
+        print('Please provide the filepath of the disaster messages database '
+              'as the first argument and the filepath of the pickle file to '
+              'save the model to as the second argument. \n\nExample: python '
               'train_classifier.py ../data/DisasterResponse.db classifier.pkl')
 
 
