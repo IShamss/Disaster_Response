@@ -5,11 +5,9 @@ Natural disasters like earthquakes, hurricanes, and floods can be devastating, l
 
 To address this challenge, machine learning pipelines can be trained to classify messages based on their content, enabling disaster response organizations to prioritize their response efforts and save lives.
 
-## File Description
-$ ./tree-md .
-# Project tree
 
-.
+## File Description
+
  * [tree-md](./tree-md)
  * [app](./app)
    * [templates](./app/templates)
