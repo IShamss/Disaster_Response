@@ -70,7 +70,7 @@ def build_model():
     Returns a pipeline that processes text data and trains a multi-output classification model using Random Forest Classifier.
     
     Returns:
-    pipeline (Pipeline): A pipeline that processes text data and trains a multi-output classification model.
+    GridSearchCV object 
     '''
     pipeline = Pipeline([
         ('text_pipeline',Pipeline([
@@ -80,7 +80,17 @@ def build_model():
         ('clf',MultiOutputClassifier(RandomForestClassifier()))
     ])
     
-    return pipeline
+    parameters = {
+        'features__text_pipeline__vect__ngram_range': ((1, 1), (1, 2)),
+        'clf__n_estimators': [50, 100, 200],
+        'clf__min_samples_split': [2, 3, 4]
+    }
+
+    # create grid search object
+    cv = GridSearchCV(pipeline,param_grid=parameters)
+    
+    return cv
+    
 
 
 def evaluate_model(model, X_test, Y_test, category_names):
